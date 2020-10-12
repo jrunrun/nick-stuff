@@ -138,7 +138,14 @@ for encounterValue in uniqueEncounters:
         for drug in uniqueDrug:
             print("Processing drug: " + drug)
             subDF3 = subDF2.loc[subDF2[_input_drug_name_] == drug].copy().reset_index()
-            subDF3['timeDelta']= (subDF3['action_new']-subDF3['action_new'].shift()).fillna(0)
+
+            # old line
+            # subDF3['timeDelta']= (subDF3['action_new']-subDF3['action_new'].shift()).fillna(0)
+            
+            # new line
+            subDF3['timeDelta']= (subDF3['action_new']-subDF3['action_new'].shift()).fillna(pd.Timedelta(seconds=0))
+
+            
             subDF3['timeDeltaSec'] = 0
             subDF3['cycle'] = 1
             subDF3['cumulativeDose'] = 0
@@ -173,7 +180,7 @@ print("------------------------------------------------")
 print ("data prep finsished...")
 
 # Output elapsed time
-print ("Elapsed:", locale.format("%.2f", time.clock() - startTime), "seconds")
+print ("Elapsed:", locale.format("%.2f", time.process_time() - startTime), "seconds")
 print("------------------------------------------------")
 print("------------------------------------------------")
 
