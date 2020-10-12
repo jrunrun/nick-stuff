@@ -1,0 +1,3 @@
+# don't track data files
+*.csv
+*.xls

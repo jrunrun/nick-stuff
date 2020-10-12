@@ -17,9 +17,9 @@ import locale
 dateTimeStamp = time.strftime("%Y%m%d_%H%M")
 
 #file handlers
-VPS_pharma = './Test2.csv'
+VPS_pharma = './Test-oct12.csv'
 print ("pharmacy data loaded")
-VPS = './VPS_test.xls'
+VPS = './Test2-Oct12.xls'
 print ("clinical data loaded")
 
 # create dataframes
@@ -141,41 +141,55 @@ for csn_val in csn_null:
 DF_Null_easy = DF_Null.loc[DF_Null['PAT_CSN'].isin(csn_easy),:].copy()
 
 print ('entering loop', csn_val, csn_complex)
-#process complex
-#loop thru each CSN in Intubation, and group pharma taken times
-for csn_val in csn_complex:
+print(DF_Null_complex)
 
-    #create subframe for Intubation Cycles filtering on CSN
-    Sub_VPS_DF = VPS_DF.loc[VPS_DF['CSN']==csn_val,:].copy()
+# NOT SEEING ANY VALUES IN csn_complex
+test = csn_val in csn_complex
+print(test)
 
-    #grab indexes to iterate against for given CSN
-    csn_idx = DF_Null_complex[DF_Null_complex['PAT_CSN']==csn_val].index.tolist()
+if test:
+    #process complex
+    #loop thru each CSN in Intubation, and group pharma taken times
+    for csn_val in csn_complex:
 
-    print ('entering 2nd loop')
-    #loop thru each csn_idx, calc and compare deltas of takenTime vs IntStartTime
-    for csn_idx_val in csn_idx:
+        #create subframe for Intubation Cycles filtering on CSN
+        Sub_VPS_DF = VPS_DF.loc[VPS_DF['CSN']==csn_val,:].copy()
 
-        #grab takenTime value (as scalar value) and set entire column to value
-        time_tmp = DF_Null[DF_Null.index==csn_idx_val]['takenTime_new'].values[0]
-        Sub_VPS_DF['time_tmp'] = time_tmp
+        #grab indexes to iterate against for given CSN
+        csn_idx = DF_Null_complex[DF_Null_complex['PAT_CSN']==csn_val].index.tolist()
 
-        #calc delta between takenTime and Intubation startTime
-        Sub_VPS_DF['delta_tmp'] = Sub_VPS_DF['startTime_new'] - Sub_VPS_DF['time_tmp']
-        #convert to absolute values
-        Sub_VPS_DF['delta_tmp'] = Sub_VPS_DF['delta_tmp']
+    
 
-        #find min delta value and index
-        delta_tmp = Sub_VPS_DF['delta_tmp'].min()
-        #print (delta_tmp)
-        index_tmp = Sub_VPS_DF['delta_tmp'].idxmin()
-        #print (index_tmp)
-        #grab IntubationCycle (as scalar value)
-        cycle_tmp = Sub_VPS_DF[Sub_VPS_DF.index==index_tmp]['IntubationCycle'].values[0]
-        #print (cycle_tmp)
-        #set intubation cycle in master dataframe
-        DF_Null_complex.loc[csn_idx_val,'IntubationCycle'] = cycle_tmp
-        #set delta in master dataframe
-        DF_Null_complex.loc[csn_idx_val,'GroupInt_Delta'] = delta_tmp
+
+        print ('entering 2nd loop')
+        #loop thru each csn_idx, calc and compare deltas of takenTime vs IntStartTime
+        for csn_idx_val in csn_idx:
+
+            #grab takenTime value (as scalar value) and set entire column to value
+            time_tmp = DF_Null[DF_Null.index==csn_idx_val]['takenTime_new'].values[0]
+            Sub_VPS_DF['time_tmp'] = time_tmp
+
+            #calc delta between takenTime and Intubation startTime
+            Sub_VPS_DF['delta_tmp'] = Sub_VPS_DF['startTime_new'] - Sub_VPS_DF['time_tmp']
+            #convert to absolute values
+            Sub_VPS_DF['delta_tmp'] = Sub_VPS_DF['delta_tmp']
+
+            #find min delta value and index
+            delta_tmp = Sub_VPS_DF['delta_tmp'].min()
+            #print (delta_tmp)
+            index_tmp = Sub_VPS_DF['delta_tmp'].idxmin()
+            #print (index_tmp)
+            #grab IntubationCycle (as scalar value)
+            cycle_tmp = Sub_VPS_DF[Sub_VPS_DF.index==index_tmp]['IntubationCycle'].values[0]
+            #print (cycle_tmp)
+            #set intubation cycle in master dataframe
+            DF_Null_complex.loc[csn_idx_val,'IntubationCycle'] = cycle_tmp
+
+        
+
+
+            #set delta in master dataframe
+            DF_Null_complex.loc[csn_idx_val,'GroupInt_Delta'] = delta_tmp
 
 #type cast for GroupInt_Delta
 DF_Null_complex.loc[:,'GroupInt_Delta'] = DF_Null_complex.loc[:,'GroupInt_Delta'].astype('timedelta64[D]')
